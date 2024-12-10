@@ -1,12 +1,20 @@
 .model small           ; Define the memory model
 .stack 100h            ; Set the stack size
 .data                         ; Section for initialized data
+    ;red         ->    db 4Ch
+    ;green       ->    db 2Ch
+    ;blue        ->    db 1Ch
+    ;mingreen    ->    db 0Ah
+    ;yellow      ->    db 0Eh
+    ;cyan        ->    db 0Bh
+    ;white       ->    db 0Fh
+    ;black       ->    db 00h
     ball_x          dw 10     ; X coordinate for the ball
     ball_y          dw 10     ; Y coordinate for the ball
-    ball_collor     db 11     ; Color of the ball
+    ball_collor     db 0bh     ; Color of the ball
     ball_side       dw 4      ; Side length of the ball(square)
-    ball_dx         dw 3      ; direction of the ball in x
-    ball_dy         dw 3      ; direction of the ball in y
+    ball_vx         dw 3      ; direction of the ball in x
+    ball_vy         dw 3      ; direction of the ball in y
     Start_Time      db 0      ; Variable to store the start time
     hours           db 0      ; Variable to store hours
     minutes         db 0      ; Variable to store minutes
@@ -151,31 +159,31 @@ MoveBall proc far
                      call EraseBall              ; Erase the ball at the current position
                      push ax                     ; Save the AX register
                      mov  ax, ball_x             ; Load the X coordinate of the ball
-                     add  ax, ball_dx            ; Add the direction of the ball in X
+                     add  ax, ball_vx            ; Add the direction of the ball in X
                      mov  ball_x, ax             ; Store the new X coordinate of the ball
                      mov  ax, ball_y             ; Load the Y coordinate of the ball
-                     add  ax, ball_dy            ; Add the direction of the ball in Y
+                     add  ax, ball_vy            ; Add the direction of the ball in Y
                      mov  ball_y, ax             ; Store the new Y coordinate of the ball
     ; Check for collision with screen boundaries and reverse direction if needed
-                     cmp  ball_x, 1              ;check if the ball is within the left boundary
+                     cmp  ball_x, 2              ;check if the ball is within the left boundary
                      jge  NoCollisionX           ; If the ball is within the left boundary, continue
-                     neg  ball_dx                ; Reverse the direction of the ball
+                     neg  ball_vx                ; Reverse the direction of the ball
     NoCollisionX:                                ; Check if the ball is within the right boundary
                      mov  ax, WindowWidth        ; Load the width of the window
                      sub  ax, ball_side          ; Subtract the side length of the ball
                      cmp  ball_x, ax             ; Check if the ball is within the right boundary
                      jle  NoCollisionX2          ; If the ball is within the right boundary, continue
-                     neg  ball_dx                ; Reverse the direction of the ball
+                     neg  ball_vx                ; Reverse the direction of the ball
     NoCollisionX2:                               ; Check if the ball is within the top boundary
                      cmp  ball_y, 1              ; Check if the ball is within the top boundary
                      jge  NoCollisionY           ; If the ball is within the top boundary, continue
-                     neg  ball_dy                ; Reverse the direction of the ball
+                     neg  ball_vy                ; Reverse the direction of the ball
     NoCollisionY:    
                      mov  ax, WindowHeight       ; Load the height of the window
                      sub  ax, ball_side          ; Subtract the side length of the ball
                      cmp  ball_y, ax             ; Check if the ball is within the bottom boundary
                      jle  NoCollisionY2          ; If the ball is within the bottom boundary, continue
-                     neg  ball_dy                ; Reverse the direction of the ball
+                     neg  ball_vy                ; Reverse the direction of the ball
     NoCollisionY2:                               ; Draw the ball at the new position
 
                      call DrawBall               ; Draw the ball
