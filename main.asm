@@ -1,17 +1,25 @@
 .model small           ; Define the memory model
 .stack 100h            ; Set the stack size
 .data                         ; Section for initialized data
-    ;red         ->    db 4Ch
-    ;green       ->    db 2Ch
-    ;blue        ->    db 1Ch
-    ;mingreen    ->    db 0Ah
-    ;yellow      ->    db 0Eh
-    ;cyan        ->    db 0Bh
-    ;white       ->    db 0Fh
-    ;black       ->    db 00h
+    ; Black:            0
+    ; Blue:             1
+    ; Green:            2
+    ; Cyan:             3
+    ; Red:              4
+    ; Magenta:          5
+    ; Brown:            6
+    ; Light Gray:       7
+    ; Dark Gray:        8
+    ; Light Blue:       9
+    ; Light Green:      10
+    ; Light Cyan:       11
+    ; Light Red:        12
+    ; Light Magenta:    13
+    ; Yellow:           14
+    ; White:            15
     ball_x          dw 10     ; X coordinate for the ball
     ball_y          dw 10     ; Y coordinate for the ball
-    ball_collor     db 0bh     ; Color of the ball
+    ball_collor     db 10     ; Color of the ball
     ball_side       dw 4      ; Side length of the ball(square)
     ball_vx         dw 3      ; direction of the ball in x
     ball_vy         dw 3      ; direction of the ball in y
@@ -193,7 +201,7 @@ MoveBall endp
 
 MakeBallIsMoving proc far
                      push ax                     ;   Save the AX register
-                     
+                     push bx                     ;   Save the BX register
                      call MoveBall               ; Move the ball
                      call GetTime                ; Get the current time
                      mov  al, TenMilleseconds    ; Load the current time
@@ -202,6 +210,7 @@ MakeBallIsMoving proc far
                      cmp  al, TenMilleseconds    ; Compare the start time with the current time
                      je   check_time             ; wait until 1/100 of a second has passed
                      call MakeBallIsMoving       ; Repeat the process
+                     pop  bx                     ;   Restore the BX register
                      pop  ax
                      ret
 MakeBallIsMoving endp
