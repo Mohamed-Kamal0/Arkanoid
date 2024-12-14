@@ -42,294 +42,703 @@
     ;arrays of start and end of each blocks number equal number of rows
     E                 dw 2 dup(?)               ; E is the end of the row
     ; Paddle dimensions
-    paddle_width      db 40                     ; Width of the rectangle
-    paddle_height     db 5                      ; Height of the rectangle
+paddle_width db 40        ; Width of the rectangle
+paddle_height db 5        ; Height of the rectangle
 
-    ; Paddle 1 coordinates
-    p1_x1             dw 145                    ; X-coordinate of the bottom-left corner
-    p1_y1             dw 197                    ; Y-coordinate of the bottom-left corner
+; Paddle 1 coordinates
+p1_x1 dw 145              ; X-coordinate of the bottom-left corner
+p1_y1 dw 197              ; Y-coordinate of the bottom-left corner
 
-    ; Paddle 2 coordinates
-    p2_x1             dw 100                    ; X-coordinate of the bottom-left corner (player 2)
-    p2_y1             dw 197                    ; Y-coordinate of the bottom-left corner (player 2)
+; Paddle 2 coordinates
+p2_x1 dw 100              ; X-coordinate of the bottom-left corner (player 2)
+p2_y1 dw 197              ; Y-coordinate of the bottom-left corner (player 2)
 
-    ; Paddle colors
-    paddle_p1_color   db 10                     ; Color for player 1 paddle
-    paddle_p2_color   db 11                     ; Color for player 2 paddle
+; Paddle colors
+paddle_p1_color db 10     ; Color for player 1 paddle
+paddle_p2_color db 11     ; Color for player 2 paddle
 
-    ; Arrow key ASCII values for movement
-    left_arrow_ascii  db 37                     ; ASCII for left arrow (not used directly)
-    right_arrow_ascii db 39                     ; ASCII for right arrow (not used directly)
 
-    ; To store key inputs for players
-    input_p1_key      db ?                      ; Key input for player 1
-    input_p2_key      db ?                      ; Key input for player 2
+; To store key inputs for players
+input_p1_key db ?         ; Key input for player 1
+input_p2_key db ?         ; Key input for player 2
+
+drawing_x1 dw 10
+drawing_y1 dw 0
+drawing_x2 dw 20
+drawing_y2 dw 50
+drawing_words_color db 12
+
+num_of_tries db 5
 
     ; Screen dimensions
 
 .code                                                  ; Section for code
 
-    ; Draw player 1 paddle
-draw_p1_paddle proc far
-                         push  ax
-                         push  bx
-                         push  cx
-                         push  dx
-
-    ; Initialize X and Y coordinates
-                         mov   CX, p1_x1
-                         mov   DX, p1_y1
-                         mov   bl, 0h                  ; Column counter
-                         mov   bh, 0h                  ; Row counter
-
-    draw_p1_loop:        
-    ; Draw a pixel for the paddle
-                         mov   al, paddle_p1_color     ; Set paddle color
-                         mov   ah, 0ch                 ; Function to draw a pixel
-                         int   10h                     ; Call interrupt to draw
+    ;drawing words and tries
+    draw_rectangle proc far
+    mov CX, drawing_x1         ; Set the initial X-coordinate
+    mov DX, drawing_y1         ; Set the initial Y-coordinate (bottom)
+    mov si, drawing_x1            ; Initialize column counter
+    mov di, drawing_y1            ; Initialize row counter
+    draw_loop1:
+    ; Draw a single pixel
+    mov al, drawing_words_color ; Set the color for the pixel
+    mov ah, 0ch             ; Function to draw a pixel
+    int 10h                 ; Call BIOS interrupt to draw
 
     ; Move to the next pixel in the row
-                         inc   CX                      ; Increment X-coordinate
-                         inc   bl                      ; Increment column counter
-                         cmp   bl, paddle_width        ; Check if the row is complete
-                         jbe   draw_p1_loop            ; Continue drawing row if not finished
+    inc si                  ; Increment column counter
+    mov CX,si                  ; Increment X-coordinate
+    cmp si,drawing_x2    ; Check if the current row is complete
+    jbe draw_loop1           ; Continue drawing the row if not finished
 
     ; Move to the next row
-                         mov   bl, 0h                  ; Reset column counter
-                         mov   CX, p1_x1               ; Reset X-coordinate
-                         dec   DX                      ; Move up to the next row
-                         inc   bh                      ; Increment row counter
-                         cmp   bh, paddle_height       ; Check if all rows are drawn
-                         jbe   draw_p1_loop            ; Continue if more rows need drawing
+    mov si, drawing_x1              ; Reset column counter
+    mov CX, drawing_x1           ; Reset X-coordinate to the start of the row
+    inc DI                 ; Move up (decrease Y-coordinate)
+    mov DX,DI                 ; Increment row counter
+    cmp DI,drawing_y2   ; Check if all rows are drawn
+    jbe draw_loop1           ; Continue drawing rows if not finished
+ret
+draw_rectangle endp
+
+draw_L proc far
+    mov drawing_x1,10
+    mov drawing_y1,50
+    mov drawing_x2,30
+    mov drawing_y2,150
+    call draw_rectangle
+    mov drawing_x1,30
+    mov drawing_y1,130
+    mov drawing_x2,64
+    mov drawing_y2,150
+    call draw_rectangle
+ret
+draw_L endp
+
+
+draw_O proc far
+    mov drawing_x1,74
+    mov drawing_y1,50
+    mov drawing_x2,128
+    mov drawing_y2,70
+    call draw_rectangle
+    mov drawing_x1,74
+    mov drawing_y1,130
+    mov drawing_x2,128
+    mov drawing_y2,150
+    call draw_rectangle
+    mov drawing_x1,74
+    mov drawing_y1,70
+    mov drawing_x2,94
+    mov drawing_y2,130
+    call draw_rectangle
+    mov drawing_x1,108
+    mov drawing_y1,70
+    mov drawing_x2,128
+    mov drawing_y2,130
+    call draw_rectangle
+ret
+draw_O endp
+
+
+draw_S proc far
+    mov drawing_x1,138
+    mov drawing_y1,130
+    mov drawing_x2,172
+    mov drawing_y2,150
+    call draw_rectangle
+    mov drawing_x1,158
+    mov drawing_y1,50
+    mov drawing_x2,192
+    mov drawing_y2,70
+    call draw_rectangle
+    mov drawing_x1,158
+    mov drawing_y1,70
+    mov drawing_x2,172
+    mov drawing_y2,130
+    call draw_rectangle
+
+ret
+draw_S endp
+
+draw_E proc far
+    mov drawing_x1,202
+    mov drawing_y1,50
+    mov drawing_x2,226
+    mov drawing_y2,150
+    call draw_rectangle
+
+    mov drawing_x1,226
+    mov drawing_y1,50
+    mov drawing_x2,256
+    mov drawing_y2,70
+    call draw_rectangle
+    mov drawing_x1,226
+    mov drawing_y1,90
+    mov drawing_x2,256
+    mov drawing_y2,110
+    call draw_rectangle
+    mov drawing_x1,226
+    mov drawing_y1,130
+    mov drawing_x2,256
+    mov drawing_y2,150
+    call draw_rectangle
+
+ret
+draw_E endp
+
+draw_exclamation_mark_lose proc far
+    mov drawing_x1,290
+    mov drawing_y1,50
+    mov drawing_x2,310
+    mov drawing_y2,120
+    call draw_rectangle
+
+    mov drawing_x1,290
+    mov drawing_y1,130
+    mov drawing_x2,310
+    mov drawing_y2,150
+    call draw_rectangle
+
+
+ret
+draw_exclamation_mark_lose endp
+
+
+
+
+draw_W proc far
+
+    mov drawing_x1,10
+    mov drawing_y1,50
+    mov drawing_x2,32
+    mov drawing_y2,150
+    call draw_rectangle
+
+    mov drawing_x1,100
+    mov drawing_y1,50
+    mov drawing_x2,122
+    mov drawing_y2,150
+    call draw_rectangle
+    mov drawing_x1,32
+    mov drawing_y1,130
+    mov drawing_x2,100
+    mov drawing_y2,150
+    call draw_rectangle
+    
+    mov drawing_x1,55
+    mov drawing_y1,50
+    mov drawing_x2,77
+    mov drawing_y2,130
+    call draw_rectangle
+    
+ret
+draw_W endp
+
+
+draw_i proc far
+
+    mov drawing_x1,132
+    mov drawing_y1,50
+    mov drawing_x2,169
+    mov drawing_y2,70
+    call draw_rectangle
+
+    mov drawing_x1,132
+    mov drawing_y1,80
+    mov drawing_x2,169
+    mov drawing_y2,150
+    call draw_rectangle
+ 
+ret
+draw_i endp
+
+draw_N proc far
+
+    mov drawing_x1,179
+    mov drawing_y1,50
+    mov drawing_x2,253
+    mov drawing_y2,75
+    call draw_rectangle
+
+    mov drawing_x1,179
+    mov drawing_y1,70
+    mov drawing_x2,204
+    mov drawing_y2,150
+    call draw_rectangle
+
+    mov drawing_x1,228
+    mov drawing_y1,70
+    mov drawing_x2,253
+    mov drawing_y2,150
+    call draw_rectangle
+
+ret
+draw_N endp
+
+draw_exclamation_mark_win proc far
+
+    mov drawing_x1,280
+    mov drawing_y1,50
+    mov drawing_x2,310
+    mov drawing_y2,120
+    call draw_rectangle
+
+    mov drawing_x1,280
+    mov drawing_y1,130
+    mov drawing_x2,310
+    mov drawing_y2,150
+    call draw_rectangle
+
+
+ret
+draw_exclamation_mark_win endp
+
+clear_screen_proc proc far
+    mov drawing_words_color,0 ;balck
+    mov drawing_x1,0
+    mov drawing_y1,0
+    mov drawing_x2,320
+    mov drawing_y2,200
+    call draw_rectangle
+    ret
+clear_screen_proc endp
+
+
+draw_word_win proc far
+
+    call clear_screen_proc
+    mov drawing_words_color,10 ;light green
+    call draw_W
+    call draw_i
+    call draw_N
+    call draw_exclamation_mark_win
+
+ret
+draw_word_win endp
+
+draw_word_lose proc far
+
+    call clear_screen_proc
+    mov drawing_words_color,12 ;light red
+    call draw_L
+    call draw_O
+    call draw_S
+    call draw_E
+    call draw_exclamation_mark_lose
+ret
+draw_word_lose endp
+
+draw_tries proc far
+
+    mov drawing_words_color,15
+    mov drawing_x1,0
+    mov drawing_y1,15
+    mov drawing_x2,320
+    mov drawing_y2,15
+    call draw_rectangle
+    mov drawing_x1,62
+    mov drawing_y1,0
+    mov drawing_x2,62
+    mov drawing_y2,15
+    call draw_rectangle
+
+    mov drawing_words_color,0
+    mov drawing_x1,0
+    mov drawing_y1,2
+    mov drawing_x2,61
+    mov drawing_y2,14
+    call draw_rectangle
+    
+
+    green_color:
+    mov drawing_words_color,10
+
+    cmp num_of_tries,3
+
+    jae start_drawing
+    red_color:
+    mov drawing_words_color,12
+
+    start_drawing:
+    cmp num_of_tries,5
+    jz fifth_try
+    cmp num_of_tries,4
+    jz fourth_try
+    cmp num_of_tries,3
+    jz third_try
+    cmp num_of_tries,2
+    jz second_try
+    cmp num_of_tries,1
+    jz first_try
+    ;return if tries = 0
+    ret
+
+    fifth_try:
+    mov drawing_x1,50
+    mov drawing_y1,2
+    mov drawing_x2,60
+    mov drawing_y2,12
+    call draw_rectangle
+    fourth_try:
+    mov drawing_x1,38
+    mov drawing_y1,2
+    mov drawing_x2,48
+    mov drawing_y2,12
+    call draw_rectangle
+    third_try:
+    mov drawing_x1,26
+    mov drawing_y1,2
+    mov drawing_x2,36
+    mov drawing_y2,12
+    call draw_rectangle
+    second_try:
+    mov drawing_x1,14
+    mov drawing_y1,2
+    mov drawing_x2,24
+    mov drawing_y2,12
+    call draw_rectangle
+    first_try:
+    mov drawing_x1,2
+    mov drawing_y1,2
+    mov drawing_x2,12
+    mov drawing_y2,12
+    call draw_rectangle
+
+    end_draw_tries_proc:
+    ret
+draw_tries endp
+
+decrease_num_of_tries proc far
+
+    cmp num_of_tries,0
+    jz end_decrease_num_of_tries_proc
+
+    dec num_of_tries
+    call draw_tries
+
+    end_decrease_num_of_tries_proc:
+    ret
+decrease_num_of_tries endp
+
+    ;----------------------
+
+    initialization proc far
+            ; initinalize COM
+        ;Set Divisor Latch Access Bit
+        mov dx,3fbh 			; Line Control Register
+        mov al,10000000b		;Set Divisor Latch Access Bit
+        out dx,al				;Out it
+        ;Set LSB byte of the Baud Rate Divisor Latch register.
+        mov dx,3f8h			
+        mov al,0ch			
+        out dx,al
+
+        ;Set MSB byte of the Baud Rate Divisor Latch register.
+        mov dx,3f9h
+        mov al,00h
+        out dx,al
+
+        ;Set port configuration
+        mov dx,3fbh
+        mov al,00011011b
+        out dx,al
+
+        ret
+    initialization endp
+
+;------------------------------------------------------------------
+; Draw player 1 paddle
+draw_p1_paddle proc far
+    push ax
+    push bx
+    push cx
+    push dx
+
+    ; Initialize X and Y coordinates
+    mov CX, p1_x1         
+    mov DX, p1_y1         
+    mov bl, 0h            ; Column counter
+    mov bh, 0h            ; Row counter
+
+draw_p1_loop:
+    ; Draw a pixel for the paddle
+    mov al, paddle_p1_color ; Set paddle color
+    mov ah, 0ch             ; Function to draw a pixel
+    int 10h                 ; Call interrupt to draw
+
+    ; Move to the next pixel in the row
+    inc CX                  ; Increment X-coordinate
+    inc bl                  ; Increment column counter
+    cmp bl, paddle_width    ; Check if the row is complete
+    jbe draw_p1_loop        ; Continue drawing row if not finished
+
+    ; Move to the next row
+    mov bl, 0h              ; Reset column counter
+    mov CX, p1_x1           ; Reset X-coordinate
+    dec DX                  ; Move up to the next row
+    inc bh                  ; Increment row counter
+    cmp bh, paddle_height   ; Check if all rows are drawn
+    jbe draw_p1_loop        ; Continue if more rows need drawing
 
     ; Restore registers and return
-                         pop   dx
-                         pop   cx
-                         pop   bx
-                         pop   ax
-                         ret
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
 draw_p1_paddle endp
 
-    ; Similar function for player 2 paddle
+; Similar function for player 2 paddle
 draw_p2_paddle proc far
-                         push  ax
-                         push  bx
-                         push  cx
-                         push  dx
+    push ax
+    push bx
+    push cx
+    push dx
 
     ; Initialize X and Y coordinates
-                         mov   CX, p2_x1
-                         mov   DX, p2_y1
-                         mov   bl, 0h
-                         mov   bh, 0h
+    mov CX, p2_x1
+    mov DX, p2_y1
+    mov bl, 0h
+    mov bh, 0h
 
-    draw_p2_loop:        
+draw_p2_loop:
     ; Draw a pixel for the paddle
-                         mov   al, paddle_p2_color
-                         mov   ah, 0ch
-                         int   10h
+    mov al, paddle_p2_color
+    mov ah, 0ch
+    int 10h
 
     ; Move to the next pixel in the row
-                         inc   CX
-                         inc   bl
-                         cmp   bl, paddle_width
-                         jbe   draw_p2_loop
+    inc CX
+    inc bl
+    cmp bl, paddle_width
+    jbe draw_p2_loop
 
     ; Move to the next row
-                         mov   bl, 0h
-                         mov   CX, p2_x1
-                         dec   DX
-                         inc   bh
-                         cmp   bh, paddle_height
-                         jbe   draw_p2_loop
+    mov bl, 0h
+    mov CX, p2_x1
+    dec DX
+    inc bh
+    cmp bh, paddle_height
+    jbe draw_p2_loop
 
     ; Restore registers and return
-                         pop   dx
-                         pop   cx
-                         pop   bx
-                         pop   ax
-                         ret
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
 draw_p2_paddle endp
 
-    ; Erase player 1 paddle by drawing black pixels
+; Erase player 1 paddle by drawing black pixels
 erase_p1_paddle proc far
-                         push  ax
-                         push  bx
-                         push  cx
-                         push  dx
+    push ax
+    push bx
+    push cx
+    push dx
 
     ; Initialize X and Y coordinates
-                         mov   CX, p1_x1
-                         mov   DX, p1_y1
-                         mov   bl, 0h
-                         mov   bh, 0h
+    mov CX, p1_x1
+    mov DX, p1_y1
+    mov bl, 0h
+    mov bh, 0h
 
-    erase_p1_loop:       
+erase_p1_loop:
     ; Draw black pixel to erase
-                         mov   al, 0                   ; Black color
-                         mov   ah, 0ch                 ; Function to draw pixel
-                         int   10h
+    mov al, 0          ; Black color
+    mov ah, 0ch        ; Function to draw pixel
+    int 10h
 
     ; Move to the next pixel in the row
-                         inc   CX
-                         inc   bl
-                         cmp   bl, paddle_width
-                         jbe   erase_p1_loop
+    inc CX
+    inc bl
+    cmp bl, paddle_width
+    jbe erase_p1_loop
 
     ; Move to the next row
-                         mov   bl, 0h
-                         mov   CX, p1_x1
-                         dec   DX
-                         inc   bh
-                         cmp   bh, paddle_height
-                         jbe   erase_p1_loop
+    mov bl, 0h
+    mov CX, p1_x1
+    dec DX
+    inc bh
+    cmp bh, paddle_height
+    jbe erase_p1_loop
 
     ; Restore registers and return
-                         pop   dx
-                         pop   cx
-                         pop   bx
-                         pop   ax
-                         ret
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
 erase_p1_paddle endp
 
-    ; Similar function for erasing player 2 paddle
+; Similar function for erasing player 2 paddle
 erase_p2_paddle proc far
-                         push  ax
-                         push  bx
-                         push  cx
-                         push  dx
+    push ax
+    push bx
+    push cx
+    push dx
 
-                         mov   CX, p2_x1
-                         mov   DX, p2_y1
-                         mov   bl, 0h
-                         mov   bh, 0h
+    mov CX, p2_x1
+    mov DX, p2_y1
+    mov bl, 0h
+    mov bh, 0h
 
-    erase_p2_loop:       
-                         mov   al, 0
-                         mov   ah, 0ch
-                         int   10h
+erase_p2_loop:
+    mov al, 0
+    mov ah, 0ch
+    int 10h
 
-                         inc   CX
-                         inc   bl
-                         cmp   bl, paddle_width
-                         jbe   erase_p2_loop
+    inc CX
+    inc bl
+    cmp bl, paddle_width
+    jbe erase_p2_loop
 
-                         mov   bl, 0h
-                         mov   CX, p2_x1
-                         dec   DX
-                         inc   bh
-                         cmp   bh, paddle_height
-                         jbe   erase_p2_loop
+    mov bl, 0h
+    mov CX, p2_x1
+    dec DX
+    inc bh
+    cmp bh, paddle_height
+    jbe erase_p2_loop
 
-                         pop   dx
-                         pop   cx
-                         pop   bx
-                         pop   ax
-                         ret
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
 erase_p2_paddle endp
 
-    ; Move player 1 paddle based on keyboard input
+; Move player 1 paddle based on keyboard input
 move_p1_paddle proc far
-                         push  ax
-                         push  bx
-                         push  cx
-                         push  dx
+    push ax
+    push bx
+    push cx
+    push dx
 
     ; Check if a key is pressed
-                         mov   ah, 1
-                         int   16h
-                         jz    endp_procedure          ; No key pressed, exit
+    mov ah, 1
+    int 16h
+    jz endp_procedure      ; No key pressed, exit
 
     ; Read key input
-                         mov   ah, 0
-                         int   16h
-                         mov   input_p1_key, al        ; Store key input
+    mov ah, 0
+    int 16h
+    mov input_p1_key, al   ; Store key input
 
+    ;check if ready to receive
+    mov dx , 3FDH		; Line Status Register
+    In al , dx 			;Read Line Status
+    AND al , 00100000b
+    JZ continue_moving
+
+    ;send data
+    mov dx , 3F8H		; Transmit data register
+    mov al,input_p1_key
+    out dx , al 
+    
+    cmp input_p1_key,1bh
+    jnz continue_moving
+
+    ; Exit program
+    mov ah, 4Ch
+    int 21h
+
+    continue_moving:
     ; Check for 'd' key to move right
-                         cmp   al, 100
-                         jz    go_right
+    cmp al, 100
+    jz go_right
 
     ; Check for 'a' key to move left
-                         cmp   al, 97
-                         jz    go_left
+    cmp al, 97
+    jz go_left
 
-                         jmp   endp_procedure          ; If no relevant key, exit
+    jmp endp_procedure     ; If no relevant key, exit
 
-    go_right:            
-                         cmp   p1_x1, 275              ; Prevent moving past screen edge
-                         jae   endp_procedure
-                         call  erase_p1_paddle         ; Erase current paddle
-                         add   p1_x1, 5                ; Move paddle to the right
-                         jmp   draw_paddles
+go_right:
+    cmp p1_x1, 275         ; Prevent moving past screen edge
+    jae endp_procedure
+    call erase_p1_paddle   ; Erase current paddle
+    add p1_x1, 5           ; Move paddle to the right
+    jmp draw_paddles
 
-    go_left:             
-                         cmp   p1_x1, 1                ; Prevent moving past screen edge
-                         jbe   endp_procedure
-                         call  erase_p1_paddle         ; Erase current paddle
-                         sub   p1_x1, 5                ; Move paddle to the left
+go_left:
+    cmp p1_x1, 1           ; Prevent moving past screen edge
+    jbe endp_procedure
+    call erase_p1_paddle   ; Erase current paddle
+    sub p1_x1, 5           ; Move paddle to the left
 
-    draw_paddles:        
-                         call  draw_p2_paddle          ; Redraw both paddles
-                         call  draw_p1_paddle
+draw_paddles:
+    call draw_p2_paddle    ; Redraw both paddles
+    call draw_p1_paddle
 
-    endp_procedure:      
-                         pop   dx
-                         pop   cx
-                         pop   bx
-                         pop   ax
-                         ret
+endp_procedure:
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
 move_p1_paddle endp
 
     ; Similar function for moving player 2 paddle
+; Similar function for moving player 2 paddle
 move_p2_paddle proc far
-                         push  ax
-                         push  bx
-                         push  cx
-                         push  dx
+    push ax
+    push bx
+    push cx
+    push dx
 
-    ; Check if a key is pressed
-                         mov   ah, 1
-                         int   16h
-                         jz    endp_procedure2         ; No key pressed, exit
+    ;check if receive
+    mov dx , 3FDH		; Line Status Register
+    in al , dx 
+    AND al , 1
+    JZ endp_procedure2
 
-    ; Read key input
-                         mov   ah, 0
-                         int   16h
-                         mov   input_p2_key, al        ; Store key input
+    ;receive data
+    mov dx , 03F8H
+    in al , dx 
+    mov input_p2_key , al
+
+    cmp input_p2_key,1bh
+    jnz cont_mov
+
+    ; Exit program
+    mov ah, 4Ch
+    int 21h
 
     ; Check for 'l' key to move right
-                         cmp   al, 108
-                         jz    go_right2
+    cont_mov:
+    cmp input_p2_key, 100
+    jz go_right2
 
     ; Check for 'j' key to move left
-                         cmp   al, 106
-                         jz    go_left2
+    cmp input_p2_key, 97
+    jz go_left2
 
-                         jmp   endp_procedure2         ; If no relevant key, exit
+    jmp endp_procedure2    ; If no relevant key, exit
 
-    go_right2:           
-                         cmp   p2_x1, 275              ; Prevent moving past screen edge
-                         jae   endp_procedure2
-                         call  erase_p2_paddle         ; Erase current paddle
-                         add   p2_x1, 5                ; Move paddle to the right
-                         jmp   draw_paddles2
+go_right2:
+    cmp p2_x1, 275         ; Prevent moving past screen edge
+    jae endp_procedure2
+    call erase_p2_paddle   ; Erase current paddle
+    add p2_x1, 5           ; Move paddle to the right
+    jmp draw_paddles2
 
-    go_left2:            
-                         cmp   p2_x1, 1                ; Prevent moving past screen edge
-                         jbe   endp_procedure2
-                         call  erase_p2_paddle         ; Erase current paddle
-                         sub   p2_x1, 5                ; Move paddle to the left
+go_left2:
+    cmp p2_x1, 1           ; Prevent moving past screen edge
+    jbe endp_procedure2
+    call erase_p2_paddle   ; Erase current paddle
+    sub p2_x1, 5           ; Move paddle to the left
 
-    draw_paddles2:       
-                         call  draw_p1_paddle          ; Redraw both paddles
-                         call  draw_p2_paddle
+draw_paddles2:
+    call draw_p1_paddle    ; Redraw both paddles
+    call draw_p2_paddle
 
-    endp_procedure2:     
-                         pop   dx
-                         pop   cx
-                         pop   bx
-                         pop   ax
-                         ret
+endp_procedure2:
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
 move_p2_paddle endp
 
 drawall proc far
@@ -379,7 +788,7 @@ drawall endp
 
 
 
-drawrow proc far
+drawrow proc 
     ;pushf
     ;push ax
     ;push bx
@@ -411,7 +820,7 @@ drawrow proc far
 drawrow endp
 
 
-drawonebrick proc far
+drawonebrick proc 
     ;pushf
                          push  ax
                          push  cx
@@ -675,6 +1084,13 @@ MakeBallIsMoving proc far
                          ret
 MakeBallIsMoving endp
 
+end_program proc far
+    mov ah, 4Ch
+    int 21h
+    ret
+end_program endp
+
+
 main proc far
                          mov   ax, @data
     ; Initialize the data segment
@@ -685,6 +1101,7 @@ main proc far
                          call  SetVideoMode
                          call  DrawBall
                          call  MoveBall
+                         call initialization
                          call  draw_p1_paddle
                          call  draw_p2_paddle
                          call  MakeBallIsMoving
