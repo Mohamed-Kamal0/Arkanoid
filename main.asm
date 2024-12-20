@@ -34,10 +34,10 @@
     row                 dw 2 dup(?)
     color               db ?
     height              db ?
-    colorsR1            db 1, 1, 1, 1, 1, 1, 1
-    colorsR2            db 5, 1, 4, 2, 6, 7, 3
-    colorsR3            db 2, 4, 6, 1, 3, 5, 7
-    colorsR4            db 1, 3, 5, 7, 2, 4, 6
+    colorsR1            db 1, 3, 2, 4, 5, 7, 6
+    colorsR2            db 5,4, 1, 1, 2, 5, 5
+    colorsR3            db 7, 4, 1, 6, 4, 2, 4
+    colorsR4            db 1, 3, 5, 3 ,2, 4, 6
     ;colors of each row
     ;arrays of start and end of each blocks number equal number of rows
     E                   dw 2 dup(?)                                    ; E is the end of the row
@@ -1015,7 +1015,7 @@ MoveBall proc far
                                    jle   NoCollisionX2                     ; If the ball is within the right boundary, continue
                                    neg   ball_vx                           ; Reverse the direction of the ball
     NoCollisionX2:                                                         ; Check if the ball is within the top boundary
-                                   cmp   ball_y, 25                        ; Check if the ball is within the top boundary
+                                   cmp   ball_y, 19                        ; Check if the ball is within the top boundary
                                    jge   NoCollisionY                      ; If the ball is within the top boundary, continue
                                    neg   ball_vy                           ; Reverse the direction of the ball
     NoCollisionY:                  
@@ -1089,7 +1089,7 @@ MoveBall proc far
     ;                                neg   ball_vx
     ;                                jmp   NoCollisionY2
     ; NoCollisiononPaddle2_side:      
-                                   cmp   ball_y, 27
+                                   cmp   ball_y, 29
                                    jg    NoCollisiononBrickrow1
                                    push  ax
                                    push  bx
@@ -1140,9 +1140,9 @@ MoveBall proc far
                                    pop   AX
 
     NoCollisiononBrickrow1:        
-                                   cmp   ball_y, 39
+                                   cmp   ball_y, 41
                                    jg    NoCollisiononBrickrow2
-                                   cmp   ball_y, 26
+                                   cmp   ball_y, 24
                                    jl    NoCollisiononBrickrow2
                                    push  ax
                                    push  bx
@@ -1194,9 +1194,9 @@ MoveBall proc far
                                    pop   AX
 
     NoCollisiononBrickrow2:        
-                                   cmp   ball_y, 51
+                                   cmp   ball_y, 53
                                    jg    NoCollisiononBrickrow3
-                                   cmp   ball_y, 38
+                                   cmp   ball_y, 36
                                    jl    NoCollisiononBrickrow3
                                    push  ax
                                    push  bx
@@ -1248,9 +1248,9 @@ MoveBall proc far
                                    pop   BX
                                    pop   AX
     NoCollisiononBrickrow3:        
-                                   cmp   ball_y, 63
+                                   cmp   ball_y, 65
                                    jg    NoCollisiononBrickrow4
-                                   cmp   ball_y,  50
+                                   cmp   ball_y,  48
                                    jl    NoCollisiononBrickrow4
                                    push  ax
                                    push  bx
@@ -1683,7 +1683,7 @@ MoveBall proc far
                                    pop   BX
                                    pop   AX
     NoCollisiononBrickcomn7:       
-                                   mov   ax, 192                  ; Load the height of the window
+                                   mov   ax, 190                  ; Load the height of the window
                                    sub   ax, ball_side                     ; Subtract the side length of the ball
                                    cmp   ball_y, ax                        ; Check if the ball is within the bottom boundary
                                    jle   NoCollisionY2                     ; If the ball is within the bottom boundary, continue
