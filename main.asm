@@ -1042,7 +1042,7 @@ MoveBall proc far
                                       sub           ax, ball_side                        ; Subtract the side length of the ball
                                       sub           ax, 5                                ; Subtract the height of the paddle
                                       cmp           ax ,ball_y                           ; Check if the ball is within the top boundary
-                                      jg            NoCollisiononPaddle1                 ; If the ball is within the top boundary, continue
+                                      jne            NoCollisiononPaddle1                 ; If the ball is within the top boundary, continue
                                       mov           ax, ball_x
                                       add           ax, ball_side
                                       cmp           ax, p1_x1                            ; Check if the ball is within the left boundary
@@ -1079,7 +1079,7 @@ MoveBall proc far
                                       sub           ax, ball_side                        ; Subtract the side length of the ball
                                       sub           ax, 5                                ; Subtract the height of the paddle
                                       cmp           ax ,ball_y                           ; Check if the ball is within the top boundary
-                                      jg            NoCollisiononPaddle2                 ; If the ball is within the top boundary, continue
+                                      jne            NoCollisiononPaddle2                 ; If the ball is within the top boundary, continue
                                       mov           ax, ball_x
                                       add           ax, ball_side
                                       cmp           ax, p2_x1                            ; Check if the ball is within the left boundary
