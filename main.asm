@@ -34,10 +34,10 @@
     row                 dw 2 dup(?)
     color               db ?
     height              db ?
-    colorsR1            db 1, 3, 2, 4, 5, 7, 6
-    colorsR2            db 5,4, 1, 1, 2, 5, 5
-    colorsR3            db 7, 4, 1, 6, 4, 2, 4
-    colorsR4            db 1, 3, 5, 3 ,2, 4, 6
+    colorsR1            db 1, 1, 1, 1, 1, 1, 1
+    colorsR2            db 5, 1, 4, 2, 6, 7, 3
+    colorsR3            db 2, 4, 6, 1, 3, 5, 7
+    colorsR4            db 1, 3, 5, 7, 2, 4, 6
     ;colors of each row
     ;arrays of start and end of each blocks number equal number of rows
     E                   dw 2 dup(?)                                    ; E is the end of the row
@@ -76,6 +76,21 @@
     num_of_tries        db 6
 
     ; Screen dimensions
+
+    ;----- chat data ----------
+    in_char db ?,"$"
+    out_char db ?,"$"
+    last_out_x_pos db 0
+    last_out_y_pos db 0
+    last_in_x_pos db 0
+    last_in_y_pos db 13
+    chat_color db 15
+    ;-----------------------
+
+    ;-------- merge modes --------
+    selector db ?
+    selecting_prombt_message db 'enter a number to choose a mode', 10, 13 , '0 -> One Player Mode' , 10 , 13 , '1 -> Two players Mode' , 10 , 13 , '2 -> Chat Mode' , 10 , 13, '$' 
+    ;-----------------------
 
 .code                                                                      ; Section for code
 
@@ -1015,7 +1030,7 @@ MoveBall proc far
                                    jle   NoCollisionX2                     ; If the ball is within the right boundary, continue
                                    neg   ball_vx                           ; Reverse the direction of the ball
     NoCollisionX2:                                                         ; Check if the ball is within the top boundary
-                                   cmp   ball_y, 19                        ; Check if the ball is within the top boundary
+                                   cmp   ball_y, 18                        ; Check if the ball is within the top boundary
                                    jge   NoCollisionY                      ; If the ball is within the top boundary, continue
                                    neg   ball_vy                           ; Reverse the direction of the ball
     NoCollisionY:                  
@@ -1089,7 +1104,7 @@ MoveBall proc far
     ;                                neg   ball_vx
     ;                                jmp   NoCollisionY2
     ; NoCollisiononPaddle2_side:      
-                                   cmp   ball_y, 29
+                                   cmp   ball_y, 27
                                    jg    NoCollisiononBrickrow1
                                    push  ax
                                    push  bx
@@ -1140,9 +1155,9 @@ MoveBall proc far
                                    pop   AX
 
     NoCollisiononBrickrow1:        
-                                   cmp   ball_y, 41
+                                   cmp   ball_y, 39
                                    jg    NoCollisiononBrickrow2
-                                   cmp   ball_y, 24
+                                   cmp   ball_y, 26
                                    jl    NoCollisiononBrickrow2
                                    push  ax
                                    push  bx
@@ -1194,9 +1209,9 @@ MoveBall proc far
                                    pop   AX
 
     NoCollisiononBrickrow2:        
-                                   cmp   ball_y, 53
+                                   cmp   ball_y, 51
                                    jg    NoCollisiononBrickrow3
-                                   cmp   ball_y, 36
+                                   cmp   ball_y, 38
                                    jl    NoCollisiononBrickrow3
                                    push  ax
                                    push  bx
@@ -1248,9 +1263,9 @@ MoveBall proc far
                                    pop   BX
                                    pop   AX
     NoCollisiononBrickrow3:        
-                                   cmp   ball_y, 65
+                                   cmp   ball_y, 63
                                    jg    NoCollisiononBrickrow4
-                                   cmp   ball_y,  48
+                                   cmp   ball_y,  50
                                    jl    NoCollisiononBrickrow4
                                    push  ax
                                    push  bx
@@ -1683,7 +1698,7 @@ MoveBall proc far
                                    pop   BX
                                    pop   AX
     NoCollisiononBrickcomn7:       
-                                   mov   ax, 190                  ; Load the height of the window
+                                   mov   ax, 192                  ; Load the height of the window
                                    sub   ax, ball_side                     ; Subtract the side length of the ball
                                    cmp   ball_y, ax                        ; Check if the ball is within the bottom boundary
                                    jle   NoCollisionY2                     ; If the ball is within the bottom boundary, continue
@@ -1751,14 +1766,9 @@ ClearScreen proc far
                                    ret
 ClearScreen endp
 
-main proc far
-                                   mov   ax, @data
-    ; Initialize the data segment
-                                   mov   ax,@data
-                                   mov   dx,ax
-                                   mov   ds,ax                             ; if you forget this color array will not work
-                                   mov   es,ax                             ; if you forget this color array will not work
-                                   call  SetVideoMode
+two_players_mode proc far
+
+                                       call  SetVideoMode
                                    call  DrawBall
                                    call  MoveBall
                                    call  drawall
@@ -1788,6 +1798,308 @@ main proc far
     ; only change coloumn postion and row postion and colour all this prameter changes with calculations
     Exit:                          
                                    call  draw_word_lose
+
+    ret
+two_players_mode endp
+
+one_player_mode proc far
+
+    ret
+one_player_mode endp
+
+
+;------------------------ chat mode ---------------------------------------
+DisChar macro char
+    push cx
+    mov ah,9          ;Display
+    mov bh,0          ;Page 0
+    mov al,char        ;Letter D
+    mov cx,1        ;5 times
+    mov bl,chat_color ;Green (A) on white(F) background
+    int 10h
+    pop cx
+
+endm DisChar
+moveCursor macro x,y
+    mov ah,02h
+    mov dl,x
+    mov dh,y
+    mov bh,0
+    int 10h
+endm moveCursor
+
+
+draw_chat_line proc
+        moveCursor 0,12
+        mov cx,0
+        r:
+            DisChar '-'
+            inc cx
+            moveCursor cl,12
+            cmp cx,80
+            jnz r
+        moveCursor 0,0
+        ret
+    draw_chat_line endp
+
+    display_sent_char proc
+        moveCursor last_out_x_pos,last_out_y_pos
+
+        mov chat_color,10
+        cmp out_char,13
+        jz new_line122
+        DisChar out_char
+        inc last_out_x_pos
+        cmp last_out_x_pos,79
+        jbe cont1222
+        mov last_out_x_pos,0
+        inc last_out_y_pos
+
+        cont1222:
+        mov out_char,al
+
+        new_line122:
+        cmp out_char,13
+        jnz cont
+        mov last_out_x_pos,0
+        inc last_out_y_pos
+        moveCursor last_out_x_pos,last_out_y_pos
+        cont:
+
+        ;scroll up
+
+        cmp last_out_y_pos,11
+        jbe en
+        mov ax,0601h
+        mov bh,07 
+        mov cx,0 
+        mov dx,0B4FH
+        int 10h
+        mov last_out_y_pos ,11
+        mov last_out_x_pos ,0
+        moveCursor last_out_x_pos,last_out_y_pos 
+
+        en:
+        ret
+    display_sent_char endp
+
+    display_received_char proc 
+        moveCursor last_in_x_pos,last_in_y_pos
+
+        mov chat_color,12
+        cmp in_char,13
+        jz new_line12233
+        DisChar in_char
+        inc last_in_x_pos
+        cmp last_in_x_pos,79
+        jbe cont111
+        mov last_in_x_pos,0
+        inc last_in_y_pos
+
+        cont111:
+        mov in_char,al
+
+        new_line12233:
+        cmp in_char,13
+        jnz cont3
+        mov last_in_x_pos,0
+        inc last_in_y_pos
+        moveCursor last_in_x_pos,last_in_y_pos
+        cont3:
+
+        ;scroll up
+
+        cmp last_in_y_pos,23
+        jbe en12
+
+        mov ax,0601h
+        mov bh,07 
+        mov cx,0D00H 
+        mov dx,174FH
+        int 10h
+        mov last_in_y_pos ,23
+        mov last_in_x_pos ,0
+        moveCursor last_in_x_pos,last_in_y_pos
+
+        en12: 
+        call Send_Proc
+        ret
+    display_received_char endp
+
+    check_if_ready_to_send proc 
+        mov dx , 3FDH		; Line Status Register
+        In al , dx 			;Read Line Status
+        AND al , 00100000b
+        JNZ send_char
+        call Receive_Proc
+
+        send_char:
+        mov dx , 3F8H		; Transmit data register
+        mov al,out_char
+        out dx , al 
+            
+        cmp out_char,1bh
+        jnz end_check_if_ready_to_send
+        call exit_program
+        
+        end_check_if_ready_to_send:
+            call Receive_Proc
+            ret
+    check_if_ready_to_send endp
+
+    check_if_ready_to_receive proc
+        mov dx , 3FDH		; Line Status Register
+        in al , dx 
+        AND al , 1
+        JNZ receive_data
+        call Send_Proc
+
+        receive_data:
+        ; receive data
+        mov dx , 03F8H
+        in al , dx 
+        mov in_char , al
+
+        cmp in_char,1bh
+        jnz end_check_if_ready_to_receive
+        call exit_program
+
+        end_check_if_ready_to_receive:
+            ret
+    check_if_ready_to_receive endp
+    ;---------------
+
+    get_char_from_keyboard proc
+
+        mov ah,1
+        int 16h               
+        jnz get_the_char
+        call Receive_Proc
+
+        get_the_char:
+    ; if keyboard buffer has a char the mov it to in_char
+        mov ah,0  
+        int 16h
+        mov out_char,al
+
+        ret
+    get_char_from_keyboard endp
+
+    exit_program proc
+        call clear_text_mode_screen
+        mov ah, 4ch
+        int 21h 
+        ret
+    exit_program endp
+
+    Receive_Proc proc
+
+        call check_if_ready_to_receive
+        call display_received_char
+
+        ret
+    Receive_Proc endp
+
+    Send_Proc proc
+
+        call get_char_from_keyboard
+        call display_sent_char
+        call check_if_ready_to_send
+
+        ret
+    Send_Proc endp
+
+    All_Chat_Proc proc
+
+        push AX
+        push BX
+        push CX
+        push DX
+
+        call clear_text_mode_screen
+        call draw_chat_line
+        call initialization
+
+        call Send_Proc
+
+
+
+        pop DX
+        pop CX
+        pop BX
+        pop AX
+
+        ret
+    All_Chat_Proc endp
+
+    clear_text_mode_screen proc
+
+        mov ax,0600h
+        mov bh,07 
+        mov cx,0 
+        mov dx,184FH
+        int 10h
+
+        ret
+    clear_text_mode_screen endp
+
+
+;--------------------------------------------------------------------------
+
+
+;--------------- merge modes -----------------------
+
+    DisPlayString macro message
+        mov dx,offset message
+        mov ah,9
+        int 21h
+    endm DisPlayString
+
+    select_game_mode proc far
+        call clear_text_mode_screen
+        moveCursor 0,0
+        DisPlayString selecting_prombt_message
+        wait_for_key_press_to_select_mode:            
+                                mov   ah, 1                             ; DOS function 1: Check for key press
+                                int   16h                               ; Call BIOS interrupt
+                                jz    wait_for_key_press_to_select_mode ; If no key pressed, loop
+
+                                mov   ah, 0                             ; DOS function 0: Read key press
+                                int   16h                               ; Call BIOS interrupt
+                                cmp   al, '0'                           ; Check if 'd' is pressed
+                                je    call_one_player
+                                cmp   al, '1'                           ; Check if 'a' is pressed
+                                je    two_players_mode
+                                cmp   al, '2'                           ; Check if 'a' is pressed
+                                je    All_Chat_Proc
+                                jmp jmp_wait_again
+
+
+                                call_one_player:
+                                    call one_player_mode    
+                                call_two_players:
+                                    call two_players_mode    
+                                call_chat:
+                                    call All_Chat_Proc
+
+                                jmp_wait_again:     
+                                jmp   wait_for_key_press                ; If neither 'd' nor 'a' is pressed, loop
+
+        ret
+    select_game_mode endp 
+;--------------------------------------------------
+
+main proc far
+                                   mov   ax, @data
+    ; Initialize the data segment
+                                   mov   ax,@data
+                                   mov   dx,ax
+                                   mov   ds,ax                             ; if you forget this color array will not work
+                                   mov   es,ax                             ; if you forget this color array will not work
+    ; call two_players_mode
+    ; call All_Chat_Proc
+    call select_game_mode
+
     loop1:                         jmp   loop1
                                    mov   ah, 4Ch                           ; DOS function 4Ch: Terminate program
                                    int   21h                               ; Call DOS interrupt
