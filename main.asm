@@ -50,7 +50,7 @@
     p1_y1                    dw 197                                                                                                                                                   ; Y-coordinate of the bottom-left corner
 
     ; Paddle 2 coordinates
-    p2_x1                    dw 100                                                                                                                                                   ; X-coordinate of the bottom-left corner (player 2)
+    p2_x1                    dw 145                                                                                                                                                   ; X-coordinate of the bottom-left corner (player 2)
     p2_y1                    dw 197                                                                                                                                                   ; Y-coordinate of the bottom-left corner (player 2)
 
     ; Paddle colors
@@ -85,6 +85,9 @@
     last_in_x_pos            db 0
     last_in_y_pos            db 13
     chat_color               db 15
+    out_start_char           db ?
+    in_start_char           db ?
+
     ;-----------------------
 
     ;-------- merge modes --------
@@ -1792,10 +1795,40 @@ call_two_or_one_players_mode proc far
                                       jz            Exit
                                       mov           ah, 1                                ; DOS function 1: Check for key press
                                       int           16h                                  ; Call BIOS interrupt
-                                      jz            wait_for_key_press                   ; If no key pressed, loop
+                                      jz            check_recieve_start_char                   ; If no key pressed, loop
+                                      jnz           get_start_char_from_keyboard
+
+    check_recieve_start_char:                                  
+                                            mov dx , 3FDH		; Line Status Register
+                                            in al , dx 
+                                            AND al , 1
+                                            JZ wait_for_key_press
+    
+    recieve_start_char:                     
+                                            mov dx , 03F8H
+                                            in al , dx 
+                                            mov in_start_char , al
+                                            jmp continue_check_for_the_start_char
+
+    get_start_char_from_keyboard:
 
                                       mov           ah, 0                                ; DOS function 0: Read key press
                                       int           16h                                  ; Call BIOS interrupt
+  
+                                      push aX
+  
+                                      mov dx , 3FDH		; Line Status Register
+                                      In al , dx 			;Read Line Status
+                                      AND al , 00100000b
+                                      JZ wait_for_key_press
+  
+                                      pop ax
+  
+                                      mov dx , 3F8H		; Transmit data register
+                                      out dx , al 
+                                        
+continue_check_for_the_start_char:
+
                                       cmp           al, 'd'                              ; Check if 'd' is pressed
                                       je            start_game
                                       cmp           al, 'a'                              ; Check if 'a' is pressed
@@ -2073,11 +2106,11 @@ select_game_mode proc far
                                       mov           ah, 0                                ; DOS function 0: Read key press
                                       int           16h                                  ; Call BIOS interrupt
                                       mov selector,al
-                                      cmp           al, '0'                              ; Check if 'd' is pressed
+                                      cmp           al, '0'                             
                                       je            call_two_or_one_players
-                                      cmp           al, '1'                              ; Check if 'a' is pressed
+                                      cmp           al, '1'                              ;
                                       je            call_two_or_one_players
-                                      cmp           al, '2'                              ; Check if 'a' is pressed
+                                      cmp           al, '2'                              ; 
                                       je            All_Chat_Proc
                                       jmp           wait_for_key_press_to_select_mode
 
