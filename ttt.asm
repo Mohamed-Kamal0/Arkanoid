@@ -1797,7 +1797,7 @@ delay endp
 MakeBallIsMoving proc far
                                       push          ax                                   ;   Save the AX register
                                       push          bx                                   ;   Save the BX register
-    ;call delay
+    call delay
                                       pushf
                                       call          move_p1_paddle
                                       popf
@@ -1806,8 +1806,7 @@ MakeBallIsMoving proc far
                                       call          move_p2_paddle
     no_move_p2_paddle:                
                                       call          MoveBall                             ; Move the ball
-                                      call          GetTime                              ; Get the current time
-                                      mov           al, TenMilleseconds                  ; Load the current time
+                                      mov           al, Start_Time                  ; Load the current time
     check_time:                                                                          ; Check if 1/200 of a second has passed
                                       call          GetTime                              ; Get the current time
                                       cmp           al, TenMilleseconds                  ; Compare the start time with the current time
@@ -1832,6 +1831,11 @@ call_two_or_one_players_mode proc far
 
                                       call          SetVideoMode
                                       call          draw_p1_paddle
+                                      push ax
+                                      call GetTime
+                                      mov al,TenMilleseconds
+                                      mov Start_Time,al
+                                      pop ax
                                     ;   call          DrawBall
                                     ;   call          MoveBall
                                       call          drawall
