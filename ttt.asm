@@ -1833,7 +1833,7 @@ call_two_or_one_players_mode proc far
                                     ;   call          DrawBall
                                     ;   call          MoveBall
                                       call          drawall
-                                      mov num_of_tries,6
+                                      mov num_of_tries,5
                                       call          draw_tries
                                       call          initialization
                                       call          draw_p1_paddle
