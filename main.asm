@@ -1261,6 +1261,7 @@ MoveBall proc far
                                       cmp           colorsR3[di],0
                                       jne           nobricksdeletedr3
                                       dec           remainingBricks
+                                      call          drawall
     nobricksdeletedr3:                
                                       pop           di
                                       pop           si
@@ -1839,40 +1840,10 @@ call_two_or_one_players_mode proc far
                                       jz            Exit
                                       mov           ah, 1                                ; DOS function 1: Check for key press
                                       int           16h                                  ; Call BIOS interrupt
-                                      jz            check_recieve_start_char                   ; If no key pressed, loop
-                                      jnz           get_start_char_from_keyboard
-
-    check_recieve_start_char:                                  
-                                            mov dx , 3FDH		; Line Status Register
-                                            in al , dx 
-                                            AND al , 1
-                                            JZ wait_for_key_press
-    
-    recieve_start_char:                     
-                                            mov dx , 03F8H
-                                            in al , dx 
-                                            mov in_start_char , al
-                                            jmp continue_check_for_the_start_char
-
-    get_start_char_from_keyboard:
+                                      jz            wait_for_key_press                   ; If no key pressed, loop
 
                                       mov           ah, 0                                ; DOS function 0: Read key press
                                       int           16h                                  ; Call BIOS interrupt
-  
-                                      push aX
-  
-                                      mov dx , 3FDH		; Line Status Register
-                                      In al , dx 			;Read Line Status
-                                      AND al , 00100000b
-                                      JZ wait_for_key_press
-  
-                                      pop ax
-  
-                                      mov dx , 3F8H		; Transmit data register
-                                      out dx , al 
-                                        
-continue_check_for_the_start_char:
-
                                       cmp           al, 'd'                              ; Check if 'd' is pressed
                                       je            start_game
                                       cmp           al, 'a'                              ; Check if 'a' is pressed
