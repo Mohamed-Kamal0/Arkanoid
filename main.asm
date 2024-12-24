@@ -34,10 +34,14 @@
     row                      dw 2 dup(?)
     color                    db ?
     height                   db ?
-    colorsR1                 db 1, 1, 1, 1, 1, 1, 1
+    ; colorsR1                 db 2, 4, 6, 1, 3, 5, 7
+    ; colorsR2                 db 1, 3, 5, 7, 2, 4, 6
+    ; colorsR3                 db 7, 5, 3, 1, 6, 4, 2
+    ; colorsR4                 db 1, 4, 2, 3, 5, 7, 6
+    colorsR1                 db 0, 0, 0, 0, 0, 0, 0
     colorsR2                 db 1, 1, 1, 1, 1, 1, 1
-    colorsR3                 db 1, 1, 1, 1, 1, 1, 1
-    colorsR4                 db 1, 1, 1, 1, 1, 1, 1
+    colorsR3                 db 0, 0, 0, 0, 0, 0, 0
+    colorsR4                 db 0, 0, 0, 0, 0, 0, 0
     ;colors of each row
     ;arrays of start and end of each blocks number equal number of rows
     E                        dw 2 dup(?)                                                                                                                                              ; E is the end of the row
@@ -85,9 +89,6 @@
     last_in_x_pos            db 0
     last_in_y_pos            db 13
     chat_color               db 15
-    out_start_char           db ?
-    in_start_char           db ?
-
     ;-----------------------
 
     ;-------- merge modes --------
@@ -637,7 +638,8 @@ move_p1_paddle proc far
                                       push          bx
                                       push          cx
                                       push          dx
-
+                                      pushf
+                                      
     ; Check if a key is pressed
                                       mov           ah, 1
                                       int           16h
@@ -697,6 +699,7 @@ move_p1_paddle proc far
                                       call          draw_p2_paddle                       ; Redraw both paddles
 
     endp_procedure:                   
+                                      popf
                                       pop           dx
                                       pop           cx
                                       pop           bx
@@ -711,7 +714,7 @@ move_p2_paddle proc far
                                       push          bx
                                       push          cx
                                       push          dx
-
+                                      pushf
     ;check if receive
                                       mov           dx , 3FDH                            ; Line Status Register
                                       in            al , dx
@@ -761,6 +764,7 @@ move_p2_paddle proc far
                                       call          draw_p2_paddle
 
     endp_procedure2:                  
+                                      popf
                                       pop           dx
                                       pop           cx
                                       pop           bx
@@ -1045,7 +1049,7 @@ MoveBall proc far
                                       sub           ax, ball_side                        ; Subtract the side length of the ball
                                       sub           ax, 5                                ; Subtract the height of the paddle
                                       cmp           ax ,ball_y                           ; Check if the ball is within the top boundary
-                                      jne            NoCollisiononPaddle1                 ; If the ball is within the top boundary, continue
+                                      jne           NoCollisiononPaddle1                 ; If the ball is within the top boundary, continue
                                       mov           ax, ball_x
                                       add           ax, ball_side
                                       cmp           ax, p1_x1                            ; Check if the ball is within the left boundary
@@ -1076,13 +1080,13 @@ MoveBall proc far
     ;                                neg   ball_vx
     ;                                jmp   NoCollisionY2
     ; NoCollisiononPaddle1_side:
-                                      cmp selector,'0'
+                                      cmp           selector,'0'
                                       je            NoCollisiononPaddle2
                                       mov           ax, WindowHeight                     ; Load the height of the window
                                       sub           ax, ball_side                        ; Subtract the side length of the ball
                                       sub           ax, 5                                ; Subtract the height of the paddle
                                       cmp           ax ,ball_y                           ; Check if the ball is within the top boundary
-                                      jne            NoCollisiononPaddle2                 ; If the ball is within the top boundary, continue
+                                      jne           NoCollisiononPaddle2                 ; If the ball is within the top boundary, continue
                                       mov           ax, ball_x
                                       add           ax, ball_side
                                       cmp           ax, p2_x1                            ; Check if the ball is within the left boundary
@@ -1143,6 +1147,7 @@ MoveBall proc far
                                       cmp           colorsR1[di],0
                                       jne           nobricksdeletedr1
                                       dec           remainingBricks
+                                      call          drawall
     nobricksdeletedr1:                
                                       pop           di
                                       pop           si
@@ -1164,9 +1169,9 @@ MoveBall proc far
                                       pop           AX
 
     NoCollisiononBrickrow1:           
-                                      cmp           ball_y, 39
+                                      cmp           ball_y, 42
                                       jg            NoCollisiononBrickrow2
-                                      cmp           ball_y, 26
+                                      cmp           ball_y, 23
                                       jl            NoCollisiononBrickrow2
                                       push          ax
                                       push          bx
@@ -1197,6 +1202,7 @@ MoveBall proc far
                                       cmp           colorsR2[di],0
                                       jne           nobricksdeletedr2
                                       dec           remainingBricks
+                                      call          drawall
     nobricksdeletedr2:                
                                       pop           di
                                       pop           si
@@ -1220,7 +1226,7 @@ MoveBall proc far
     NoCollisiononBrickrow2:           
                                       cmp           ball_y, 51
                                       jg            NoCollisiononBrickrow3
-                                      cmp           ball_y, 38
+                                      cmp           ball_y, 36
                                       jl            NoCollisiononBrickrow3
                                       push          ax
                                       push          bx
@@ -1252,6 +1258,7 @@ MoveBall proc far
                                       cmp           colorsR3[di],0
                                       jne           nobricksdeletedr3
                                       dec           remainingBricks
+                                      call          drawall
     nobricksdeletedr3:                
                                       pop           di
                                       pop           si
@@ -1274,7 +1281,7 @@ MoveBall proc far
     NoCollisiononBrickrow3:           
                                       cmp           ball_y, 63
                                       jg            NoCollisiononBrickrow4
-                                      cmp           ball_y,  50
+                                      cmp           ball_y,  47
                                       jl            NoCollisiononBrickrow4
                                       push          ax
                                       push          bx
@@ -1304,6 +1311,7 @@ MoveBall proc far
                                       cmp           colorsR4[di],0
                                       jne           nobricksdeletedr4
                                       dec           remainingBricks
+                                      call          drawall
     nobricksdeletedr4:                
                                       pop           di
                                       pop           si
@@ -1358,6 +1366,7 @@ MoveBall proc far
                                       cmp           colorsR1[di],0
                                       jne           nobricksdeleted1
                                       dec           remainingBricks
+                                      call          drawall
     nobricksdeleted1:                 
                                       pop           di
                                       pop           si
@@ -1377,7 +1386,7 @@ MoveBall proc far
                                       pop           BX
                                       pop           AX
     NoCollisiononBrickcomn1:          
-                                      cmp           ball_x,56
+                                      cmp           ball_x,54
                                       jl            NoCollisiononBrickcomn2
                                       cmp           ball_x,99
                                       jg            NoCollisiononBrickcomn2
@@ -1413,6 +1422,7 @@ MoveBall proc far
                                       cmp           colorsR1[di],0
                                       jne           nobricksdeleted2
                                       dec           remainingBricks
+                                      call          drawall
     nobricksdeleted2:                 
                                       pop           di
                                       pop           si
@@ -1468,6 +1478,7 @@ MoveBall proc far
                                       cmp           colorsR1[di],0
                                       jne           nobricksdeleted3
                                       dec           remainingBricks
+                                      call          drawall
     nobricksdeleted3:                 
                                       pop           di
                                       pop           si
@@ -1523,6 +1534,7 @@ MoveBall proc far
                                       cmp           colorsR1[di],0
                                       jne           nobricksdeleted4
                                       dec           remainingBricks
+                                      call          drawall
     nobricksdeleted4:                 
                                       pop           di
                                       pop           si
@@ -1578,6 +1590,7 @@ MoveBall proc far
                                       cmp           colorsR1[di],0
                                       jne           nobricksdeleted5
                                       dec           remainingBricks
+                                      call          drawall
     nobricksdeleted5:                 
                                       pop           di
                                       pop           si
@@ -1633,6 +1646,7 @@ MoveBall proc far
                                       cmp           colorsR1[di],0
                                       jne           nobricksdeleted6
                                       dec           remainingBricks
+                                      call          drawall
     nobricksdeleted6:                 
                                       pop           di
                                       pop           si
@@ -1688,6 +1702,7 @@ MoveBall proc far
                                       cmp           colorsR1[di],0
                                       jne           nobricksdeleted7
                                       dec           remainingBricks
+                                      call          drawall
     nobricksdeleted7:                 
                                       pop           di
                                       pop           si
@@ -1713,14 +1728,19 @@ MoveBall proc far
                                       jle           NoCollisionY2                        ; If the ball is within the bottom boundary, continue
     ;neg   ball_vy                 ; Reverse the direction of the ball
                                       call          EraseBall
-                                      push          ax
-                                      mov           ax,p1_x1
-                                      add           ax,19
-                                      mov           ball_x,ax
+                                      mov           ball_x,165
                                       mov           ball_y,189
                                       call          DrawBall
+                                      call          erase_p1_paddle
+                                      mov           p1_x1,145
+                                      call          draw_p1_paddle
+                                      cmp           selector,'0'
+                                      je            no_reset_p2
+                                      call          erase_p2_paddle
+                                      mov           p2_x1,145
+                                      call          draw_p2_paddle
+    no_reset_p2:                      
                                       call          decrease_num_of_tries
-                                      pop           ax
                                       jmp           wait_for_key_press
                          
     NoCollisionY2:                                                                       ; Draw the ball at the new position
@@ -1734,7 +1754,7 @@ MoveBall proc far
                                       cmp           selector,'0'
                                       je            skip_paddle2_cg
                                       call          draw_p2_paddle
-    skip_paddle2_cg:
+    skip_paddle2_cg:                  
                                       mov           ax, ball_x                           ; Load the X coordinate of the ball
                                       add           ax, ball_vx                          ; Add the direction of the ball in X
                                       mov           ball_x, ax                           ; Store the new X coordinate of the ball
@@ -1748,20 +1768,34 @@ MoveBall proc far
                                       pop           ax                                   ; Restore the AX register
                                       ret
 MoveBall endp
-
+delay proc far
+                                      push          cx
+                                      pushf
+                                      MOV           CX, 08FFFh                           ; Load CX with a large value (near 65,535)
+    DELAY_LOOP:                       
+                                      NOP                                                ; No Operation (optional, adds extra delay)
+                                      DEC           CX                                   ; Decrement CX
+                                      JNZ           DELAY_LOOP                           ; Jump to DELAY_LOOP if CX is not zero
+                                      popf
+                                      pop           cx
+                                      RET                                                ; Return when the delay is over
+delay endp
 MakeBallIsMoving proc far
                                       push          ax                                   ;   Save the AX register
                                       push          bx                                   ;   Save the BX register
-                                      call          drawall
+    ;call delay
                                       call          move_p1_paddle
+                                      cmp           selector,'0'
+                                      je            no_move_p2_paddle
                                       call          move_p2_paddle
+    no_move_p2_paddle:                
                                       call          MoveBall                             ; Move the ball
                                       call          GetTime                              ; Get the current time
                                       mov           al, TenMilleseconds                  ; Load the current time
-    check_time:                                                                          ; Check if 1/100 of a second has passed
+    check_time:                                                                          ; Check if 1/200 of a second has passed
                                       call          GetTime                              ; Get the current time
                                       cmp           al, TenMilleseconds                  ; Compare the start time with the current time
-                                      je            check_time                           ; wait until 1/100 of a second has passed
+                                      je            check_time                           ; wait until 1/200 of a second has passed
                                       call          MakeBallIsMoving                     ; Repeat the process
                                       pop           bx                                   ;   Restore the BX register
                                       pop           ax
@@ -1795,40 +1829,10 @@ call_two_or_one_players_mode proc far
                                       jz            Exit
                                       mov           ah, 1                                ; DOS function 1: Check for key press
                                       int           16h                                  ; Call BIOS interrupt
-                                      jz            check_recieve_start_char                   ; If no key pressed, loop
-                                      jnz           get_start_char_from_keyboard
-
-    check_recieve_start_char:                                  
-                                            mov dx , 3FDH		; Line Status Register
-                                            in al , dx 
-                                            AND al , 1
-                                            JZ wait_for_key_press
-    
-    recieve_start_char:                     
-                                            mov dx , 03F8H
-                                            in al , dx 
-                                            mov in_start_char , al
-                                            jmp continue_check_for_the_start_char
-
-    get_start_char_from_keyboard:
+                                      jz            wait_for_key_press                   ; If no key pressed, loop
 
                                       mov           ah, 0                                ; DOS function 0: Read key press
                                       int           16h                                  ; Call BIOS interrupt
-  
-                                      push aX
-  
-                                      mov dx , 3FDH		; Line Status Register
-                                      In al , dx 			;Read Line Status
-                                      AND al , 00100000b
-                                      JZ wait_for_key_press
-  
-                                      pop ax
-  
-                                      mov dx , 3F8H		; Transmit data register
-                                      out dx , al 
-                                        
-continue_check_for_the_start_char:
-
                                       cmp           al, 'd'                              ; Check if 'd' is pressed
                                       je            start_game
                                       cmp           al, 'a'                              ; Check if 'a' is pressed
@@ -2105,17 +2109,17 @@ select_game_mode proc far
 
                                       mov           ah, 0                                ; DOS function 0: Read key press
                                       int           16h                                  ; Call BIOS interrupt
-                                      mov selector,al
-                                      cmp           al, '0'                             
+                                      mov           selector,al
+                                      cmp           al, '0'                              ; Check if 'd' is pressed
                                       je            call_two_or_one_players
-                                      cmp           al, '1'                              ;
+                                      cmp           al, '1'                              ; Check if 'a' is pressed
                                       je            call_two_or_one_players
-                                      cmp           al, '2'                              ; 
+                                      cmp           al, '2'                              ; Check if 'a' is pressed
                                       je            All_Chat_Proc
                                       jmp           wait_for_key_press_to_select_mode
 
 
-    call_two_or_one_players:                 
+    call_two_or_one_players:          
                                     
                                       call          call_two_or_one_players_mode
     call_chat:                        
