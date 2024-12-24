@@ -2244,6 +2244,28 @@ select_game_mode proc
 select_game_mode endp
     ;--------------------------------------------------
 
+    ;----------------- win or lose delay ---------------------
+After_win_or_lose proc far
+
+push ax
+push bx
+push cx
+push DX
+mov cx, 10000
+loop_to_delay:
+dec cx
+jnz loop_to_delay
+
+
+pop dx
+pop cx
+pop bx
+pop ax
+jmp return_to_select_game_mode
+ret
+
+After_win_or_lose endp ENDP
+
 main proc far
                                       mov           ax, @data
     ; Initialize the data segment
@@ -2253,6 +2275,7 @@ main proc far
                                       mov           es,ax                                ; if you forget this color array will not work
     ; call two_players_mode
     ; call All_Chat_Proc
+    return_to_select_game_mode:
                                       call          select_game_mode
 
     loop1:                            jmp           loop1
