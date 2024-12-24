@@ -1847,8 +1847,10 @@ call_two_or_one_players_mode proc far
                                       int           16h                                  ; Call BIOS interrupt
                                       jz            check_recieve_start_char                   ; If no key pressed, loop
                                       jnz           get_start_char_from_keyboard
-
-    check_recieve_start_char:                                  
+                                    
+    check_recieve_start_char:               
+                                            cmp selector,'0'
+                                            jz  wait_for_key_press                  
                                             mov dx , 3FDH		; Line Status Register
                                             in al , dx 
                                             AND al , 1
@@ -1864,7 +1866,9 @@ call_two_or_one_players_mode proc far
 
                                       mov           ah, 0                                ; DOS function 0: Read key press
                                       int           16h                                  ; Call BIOS interrupt
-  
+                                      
+                                      cmp selector,'0'
+                                      jz continue_check_for_the_start_char
                                       push aX
   
                                       mov dx , 3FDH		; Line Status Register
@@ -1955,27 +1959,23 @@ display_sent_char proc
 
     cont1222:                         
                                       mov           out_char,al
+                                      jmp           continue_to_check_scrollup
 
     new_line122:                      
-                                      cmp           out_char,13
-                                      jnz           cont_to_check_back_space
                                       mov           last_out_x_pos,0
                                       inc           last_out_y_pos
                                       moveCursor    last_out_x_pos,last_out_y_pos
                                       jmp continue_to_check_scrollup
     cont_to_check_back_space:                             
-                                       cmp out_char,8
-                                       jnz continue_to_check_scrollup
-                                    ;    cmp last_out_x_pos,0
-                                    ;    jnz cont3333
-                                    ;    dec last_out_y_pos
-                                    ;    mov last_out_x_pos,79
-                                    ;    jmp cont4444
-                                       cont3333:     
+
+                                       cmp last_out_x_pos,0
+                                       jnz continue_usual
+                                       cmp last_out_y_pos,0
+                                       jz en
+                                       mov last_out_x_pos,80
+                                       dec last_out_y_pos
+                                       continue_usual:
                                        dec last_out_x_pos
-                                       dec last_out_x_pos
-                                       cont4444:
-                                       DisChar 32
                                        moveCursor    last_out_x_pos,last_out_y_pos
                                        DisChar 32
 
@@ -1990,9 +1990,9 @@ display_sent_char proc
                                       int           10h
                                       mov           last_out_y_pos ,11
                                       mov           last_out_x_pos ,0
-                                      moveCursor    last_out_x_pos,last_out_y_pos
 
     en:                               
+                                      moveCursor last_out_x_pos,last_out_y_pos
                                       ret
 display_sent_char endp
 
@@ -2001,29 +2001,42 @@ display_received_char proc
 
                                       mov           chat_color,12
                                       cmp           in_char,13
-                                      jz            new_line12233
+                                      jz            new_line133
+                                      cmp           in_char,8
+                                      jz            cont_to_check_back_space_receive
                                       DisChar       in_char
                                       inc           last_in_x_pos
                                       cmp           last_in_x_pos,79
-                                      jbe           cont111
+                                      jbe           cont133
                                       mov           last_in_x_pos,0
                                       inc           last_in_y_pos
 
-    cont111:                          
+    cont133:                         
                                       mov           in_char,al
+                                      jmp           continue_to_check_scrollup_receive
 
-    new_line12233:                    
-                                      cmp           in_char,13
-                                      jnz           cont3
+    new_line133:                      
                                       mov           last_in_x_pos,0
                                       inc           last_in_y_pos
                                       moveCursor    last_in_x_pos,last_in_y_pos
-    cont3:                            
+                                      jmp continue_to_check_scrollup_receive
+    cont_to_check_back_space_receive:                             
 
-    ;scroll up
+                                       cmp last_in_x_pos,0
+                                       jnz continue_usual_receive
+                                       cmp last_in_y_pos,13
+                                       jz en_receive
+                                       mov last_in_x_pos,80
+                                       dec last_in_y_pos
+                                       continue_usual_receive:
+                                       dec last_in_x_pos
+                                       moveCursor    last_in_x_pos,last_in_y_pos
+                                       DisChar 32
+
+    continue_to_check_scrollup_receive:
 
                                       cmp           last_in_y_pos,23
-                                      jbe           en12
+                                      jbe           en_receive
 
                                       mov           ax,0601h
                                       mov           bh,07
@@ -2032,9 +2045,9 @@ display_received_char proc
                                       int           10h
                                       mov           last_in_y_pos ,23
                                       mov           last_in_x_pos ,0
-                                      moveCursor    last_in_x_pos,last_in_y_pos
 
-    en12:                             
+    en_receive:                               
+                                      moveCursor last_out_x_pos,last_out_y_pos
                                       call          Send_Proc
                                       ret
 display_received_char endp
