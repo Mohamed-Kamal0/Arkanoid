@@ -1898,7 +1898,7 @@ move_game_play:
     ; only change coloumn postion and row postion and colour all this prameter changes with calculations
     Exit:                             
                                       call          draw_word_lose
-                                        call          After_win_or_lose
+                                      call          After_win_or_lose
                                         
                                       ret
 call_two_or_one_players_mode endp
@@ -1944,6 +1944,8 @@ display_sent_char proc
                                       mov           chat_color,10
                                       cmp           out_char,13
                                       jz            new_line122
+                                      cmp           out_char,8
+                                      jz            cont_to_check_back_space
                                       DisChar       out_char
                                       inc           last_out_x_pos
                                       cmp           last_out_x_pos,79
@@ -1956,13 +1958,28 @@ display_sent_char proc
 
     new_line122:                      
                                       cmp           out_char,13
-                                      jnz           cont
+                                      jnz           cont_to_check_back_space
                                       mov           last_out_x_pos,0
                                       inc           last_out_y_pos
                                       moveCursor    last_out_x_pos,last_out_y_pos
-    cont:                             
+                                      jmp continue_to_check_scrollup
+    cont_to_check_back_space:                             
+                                       cmp out_char,8
+                                       jnz continue_to_check_scrollup
+                                    ;    cmp last_out_x_pos,0
+                                    ;    jnz cont3333
+                                    ;    dec last_out_y_pos
+                                    ;    mov last_out_x_pos,79
+                                    ;    jmp cont4444
+                                       cont3333:     
+                                       dec last_out_x_pos
+                                       dec last_out_x_pos
+                                       cont4444:
+                                       DisChar 32
+                                       moveCursor    last_out_x_pos,last_out_y_pos
+                                       DisChar 32
 
-    ;scroll up
+    continue_to_check_scrollup:
 
                                       cmp           last_out_y_pos,11
                                       jbe           en
@@ -2230,6 +2247,10 @@ select_game_mode proc
                                       mov           ah, 0                                ; DOS function 0: Read key press
                                       int           16h                                  ; Call BIOS interrupt
                                       mov           selector,al
+                                      cmp al,1bh
+                                      jnz skip_to_choose_mode
+                                      call exit_program
+    skip_to_choose_mode:
                                       cmp           al, '0'                              ; Check if 'd' is pressed
                                       je            call_two_or_one_players
                                       cmp           al, '1'                              ; Check if 'a' is pressed
@@ -2253,7 +2274,7 @@ select_game_mode endp
     ;--------------------------------------------------
 
     ;----------------- win or lose delay ---------------------
-After_win_or_lose proc far
+After_win_or_lose proc
 
         push ax
         push bx
