@@ -1757,7 +1757,7 @@ MoveBall proc far
                                       cmp           remainingBricks,0
                                       jne           continueGame
                                       call          draw_word_win
-    infintel:                         jmp           infintel
+    infintel:                         call           After_win_or_lose
     continueGame:                     
                                       call          EraseBall
                                       call          draw_p1_paddle
@@ -1879,10 +1879,16 @@ call_two_or_one_players_mode proc far
                                         
 continue_check_for_the_start_char:
 
+                                      cmp           al, 1bh
+                                      jnz           move_game_play
+                                      call          return_to_main_mineu
+move_game_play:         
                                       cmp           al, 'd'                              ; Check if 'd' is pressed
                                       je            start_game
                                       cmp           al, 'a'                              ; Check if 'a' is pressed
                                       je            start_game
+                                     
+                                                
                          
                                       jmp           wait_for_key_press                   ; If neither 'd' nor 'a' is pressed, loop
 
@@ -1892,7 +1898,8 @@ continue_check_for_the_start_char:
     ; only change coloumn postion and row postion and colour all this prameter changes with calculations
     Exit:                             
                                       call          draw_word_lose
-
+                                        call          After_win_or_lose
+                                        
                                       ret
 call_two_or_one_players_mode endp
 
@@ -2248,23 +2255,27 @@ select_game_mode endp
     ;----------------- win or lose delay ---------------------
 After_win_or_lose proc far
 
-push ax
-push bx
-push cx
-push DX
-pushf
-mov cx, 10000
-loop_to_delay:
-dec cx
-jnz loop_to_delay
+        push ax
+        push bx
+        push cx
+        push DX
+        pushf
+        mov cx, 10000
+        loop_to_delay:
+        mov bx,500
+            Loop_nest:
+            dec bx
+            jnz Loop_nest
+        dec cx
+        jnz loop_to_delay
 
-popf
-pop dx
-pop cx
-pop bx
-pop ax
-jmp return_to_main_mineu
-ret
+        popf
+        pop dx
+        pop cx
+        pop bx
+        pop ax
+        call return_to_main_mineu
+        ret
 
 After_win_or_lose endp 
 
