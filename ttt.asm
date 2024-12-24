@@ -17,8 +17,8 @@
     ; Light Magenta:    13
     ; Yellow:           14
     ; White:            15
-    ball_x                   dw 161                                                                                                                                                   ; X coordinate for the ball
-    ball_y                   dw 186                                                                                                                                                   ; Y coordinate for the ball
+    ball_x                   dw 165                                                                                                                                                   ; X coordinate for the ball
+    ball_y                   dw 189                                                                                                                                                   ; Y coordinate for the ball
     ball_collor              db 10                                                                                                                                                    ; Color of the ball
     ball_side                dw 3                                                                                                                                                     ; Side length of the ball(square)
     ball_vx                  dw 3                                                                                                                                                     ; direction of the ball in x
@@ -1827,19 +1827,19 @@ ClearScreen endp
 call_two_or_one_players_mode proc far
 
                                       call          SetVideoMode
-                                      mov           ball_x,165
-                                      mov           ball_y,189
-                                      call          DrawBall
+                                      call          draw_p1_paddle
+                                      je            wait_for_key_press
+                                      call          draw_p2_paddle
                                     ;   call          DrawBall
                                     ;   call          MoveBall
                                       call          drawall
                                       mov num_of_tries,5
                                       call          draw_tries
                                       call          initialization
-                                      call          draw_p1_paddle
+                                      mov           ball_x,165
+                                      mov           ball_y,189
+                                      call          DrawBall
                                       cmp           selector,'0'
-                                      je            wait_for_key_press
-                                      call          draw_p2_paddle
      wait_for_key_press:               
                                       cmp           num_of_tries,0
                                       jz            Exit
@@ -2251,17 +2251,18 @@ push ax
 push bx
 push cx
 push DX
+pushf
 mov cx, 10000
 loop_to_delay:
 dec cx
 jnz loop_to_delay
 
-
+popf
 pop dx
 pop cx
 pop bx
 pop ax
-jmp return_to_select_game_mode
+jmp return_to_main_mineu
 ret
 
 After_win_or_lose endp ENDP
