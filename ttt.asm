@@ -38,10 +38,10 @@
     colorsR2                 db 1, 3, 5, 7, 2, 4, 6
     colorsR3                 db 7, 5, 3, 1, 6, 4, 2
     colorsR4                 db 1, 4, 2, 3, 5, 7, 6
-    ; colorsR1                 db 0, 0, 0, 0, 0, 0, 0
-    ; colorsR2                 db 1, 1, 1, 1, 1, 1, 1
-    ; colorsR3                 db 0, 0, 0, 0, 0, 0, 0
-    ; colorsR4                 db 0, 0, 0, 0, 0, 0, 0
+    ; colorsR1                 db 1, 0, 0, 0, 0, 0, 0
+    ; colorsR2                 db 1, 0, 0, 0, 0, 0, 0
+    ; colorsR3                 db 1, 0, 0, 0, 0, 0, 0
+    ; colorsR4                 db 1, 0, 0, 0, 0, 0, 0
     ;colors of each row
     ;arrays of start and end of each blocks number equal number of rows
     E                        dw 2 dup(?)                                                                                                                                              ; E is the end of the row
@@ -1226,7 +1226,7 @@ MoveBall proc far
                                       pop           AX
 
     NoCollisiononBrickrow2:           
-                                      cmp           ball_y, 51
+                                      cmp           ball_y, 54
                                       jg            NoCollisiononBrickrow3
                                       cmp           ball_y, 36
                                       jl            NoCollisiononBrickrow3
@@ -1281,7 +1281,7 @@ MoveBall proc far
                                       pop           BX
                                       pop           AX
     NoCollisiononBrickrow3:           
-                                      cmp           ball_y, 63
+                                      cmp           ball_y, 67
                                       jg            NoCollisiononBrickrow4
                                       cmp           ball_y,  47
                                       jl            NoCollisiononBrickrow4
@@ -1336,7 +1336,7 @@ MoveBall proc far
     NoCollisiononBrickrow4:           
                                       cmp           ball_x,14
                                       jl            NoCollisiononBrickcomn1
-                                      cmp           ball_x,58
+                                      cmp           ball_x,59
                                       jg            NoCollisiononBrickcomn1
                                       push          ax
                                       push          bx
@@ -1390,7 +1390,7 @@ MoveBall proc far
                                       pop           BX
                                       pop           AX
     NoCollisiononBrickcomn1:          
-                                      cmp           ball_x,54
+                                      cmp           ball_x,52
                                       jl            NoCollisiononBrickcomn2
                                       cmp           ball_x,99
                                       jg            NoCollisiononBrickcomn2
@@ -1675,7 +1675,7 @@ MoveBall proc far
                                       pop           BX
                                       pop           AX
     NoCollisiononBrickcomn6:          
-                                      cmp           ball_x,257
+                                      cmp           ball_x,254
                                       jl            NoCollisiononBrickcomn7
                                       cmp           ball_x,300
                                       jg            NoCollisiononBrickcomn7
