@@ -38,10 +38,10 @@
     colorsR2                 db 1, 3, 5, 7, 2, 4, 6
     colorsR3                 db 7, 5, 3, 1, 6, 4, 2
     colorsR4                 db 1, 4, 2, 3, 5, 7, 6
-    ; colorsR1                 db 1, 0, 0, 0, 0, 0, 0
-    ; colorsR2                 db 1, 0, 0, 0, 0, 0, 0
-    ; colorsR3                 db 1, 0, 0, 0, 0, 0, 0
-    ; colorsR4                 db 1, 0, 0, 0, 0, 0, 0
+    ; colorsR1                 db 0, 0, 0, 0, 0, 0, 0
+    ; colorsR2                 db 0, 0, 0, 0, 0, 0, 0
+    ; colorsR3                 db 0, 0, 0, 0, 0, 0, 0
+    ; colorsR4                 db 1, 1, 1, 1, 1, 1, 1
     ;colors of each row
     ;arrays of start and end of each blocks number equal number of rows
     E                        dw 2 dup(?)                                                                                                                                              ; E is the end of the row
@@ -777,6 +777,8 @@ drawall proc
                                       push          bx
                                       push          cx
                                       push          dx
+                                      push si
+                                      push di
                                       pushf
                                       mov           column,0
                                       mov           row ,17
@@ -810,6 +812,8 @@ drawall proc
                                       call          drawrow
 
                                       popf
+                                      pop di
+                                      pop si
                                       pop           dx
                                       pop           cx
                                       pop           bx
@@ -1757,7 +1761,7 @@ MoveBall proc far
                                       cmp           remainingBricks,0
                                       jne           continueGame
                                       call          draw_word_win
-    infintel:                         call           After_win_or_lose
+                                      call           After_win_or_lose
     continueGame:                     
                                       call          EraseBall
                                       call          draw_p1_paddle
