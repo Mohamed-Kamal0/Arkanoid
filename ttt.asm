@@ -1933,7 +1933,8 @@ moveCursor macro x,y
                                       endm          moveCursor
 
 
-draw_chat_line proc
+draw_chat_line proc                  
+                                      mov chat_color,15
                                       moveCursor    0,12
                                       mov           cx,0
     r:                                
