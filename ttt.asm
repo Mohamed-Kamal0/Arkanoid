@@ -1828,8 +1828,6 @@ call_two_or_one_players_mode proc far
 
                                       call          SetVideoMode
                                       call          draw_p1_paddle
-                                      je            wait_for_key_press
-                                      call          draw_p2_paddle
                                     ;   call          DrawBall
                                     ;   call          MoveBall
                                       call          drawall
@@ -1840,6 +1838,8 @@ call_two_or_one_players_mode proc far
                                       mov           ball_y,189
                                       call          DrawBall
                                       cmp           selector,'0'
+                                      je            wait_for_key_press
+                                      call          draw_p2_paddle
      wait_for_key_press:               
                                       cmp           num_of_tries,0
                                       jz            Exit
@@ -2097,7 +2097,8 @@ return_to_main_mineu proc
     mov p2_y1,197
     mov num_of_tries,5
     mov remainingBricks,28
-
+    mov ball_vx,3
+    mov ball_vy,3
     ;colors
     mov colorsR1[0],2
     mov colorsR1[1],4
@@ -2265,7 +2266,7 @@ pop ax
 jmp return_to_main_mineu
 ret
 
-After_win_or_lose endp ENDP
+After_win_or_lose endp 
 
 main proc far
                                       mov           ax, @data
