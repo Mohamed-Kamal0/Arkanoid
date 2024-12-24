@@ -19,7 +19,7 @@
     ; White:            15
     ball_x                   dw 161                                                                                                                                                   ; X coordinate for the ball
     ball_y                   dw 186                                                                                                                                                   ; Y coordinate for the ball
-    ball_collor              db 10                                                                                                                                                    ; Color of the ball
+    ball_collor              db 5                                                                                                                                                     ; Color of the ball
     ball_side                dw 3                                                                                                                                                     ; Side length of the ball(square)
     ball_vx                  dw 3                                                                                                                                                     ; direction of the ball in x
     ball_vy                  dw 3                                                                                                                                                     ; direction of the ball in y
@@ -90,7 +90,7 @@
     last_in_y_pos            db 13
     chat_color               db 15
     out_start_char           db ?
-    in_start_char           db ?
+    in_start_char            db ?
     ;-----------------------
 
     ;-------- merge modes --------
@@ -667,7 +667,7 @@ move_p1_paddle proc far
                                       jnz           continue_moving
 
     ; go to main minue
-                                      call return_to_main_mineu
+                                      call          return_to_main_mineu
 
     continue_moving:                  
     ; Check for 'd' key to move right
@@ -731,7 +731,7 @@ move_p2_paddle proc far
                                       jnz           cont_mov
 
     ; go to main minue
-                                      call return_to_main_mineu
+                                      call          return_to_main_mineu
 
     ; Check for 'l' key to move right
     cont_mov:                         
@@ -1261,7 +1261,6 @@ MoveBall proc far
                                       cmp           colorsR3[di],0
                                       jne           nobricksdeletedr3
                                       dec           remainingBricks
-                                      call          drawall
     nobricksdeletedr3:                
                                       pop           di
                                       pop           si
@@ -1795,7 +1794,9 @@ MakeBallIsMoving proc far
                                       push          ax                                   ;   Save the AX register
                                       push          bx                                   ;   Save the BX register
     ;call delay
+                                      pushf
                                       call          move_p1_paddle
+                                      popf
                                       cmp           selector,'0'
                                       je            no_move_p2_paddle
                                       call          move_p2_paddle
@@ -1835,7 +1836,7 @@ call_two_or_one_players_mode proc far
                                       cmp           selector,'0'
                                       je            wait_for_key_press
                                       call          draw_p2_paddle
-     wait_for_key_press:               
+    wait_for_key_press:               
                                       cmp           num_of_tries,0
                                       jz            Exit
                                       mov           ah, 1                                ; DOS function 1: Check for key press
@@ -2048,12 +2049,12 @@ exit_program endp
 
 
 return_to_main_mineu proc
-    mov last_out_x_pos,0          
-    mov last_out_y_pos,0           
-    mov last_in_x_pos,0          
-    mov last_in_y_pos,13           
-    call select_game_mode
-    ret
+                                      mov           last_out_x_pos,0
+                                      mov           last_out_y_pos,0
+                                      mov           last_in_x_pos,0
+                                      mov           last_in_y_pos,13
+                                      call          select_game_mode
+                                      ret
 return_to_main_mineu endp
 
 Receive_Proc proc
@@ -2120,13 +2121,13 @@ DisPlayString macro message
                                       endm          DisPlayString
 
 set_text_mode proc far
-    MOV AH, 00h     ; Function to set video mode
-    MOV AL, 03h     ; Mode 3: 80x25 text mode, color
-    INT 10h         ; Call BIOS video interrupt
-    ret
+                                      MOV           AH, 00h                              ; Function to set video mode
+                                      MOV           AL, 03h                              ; Mode 3: 80x25 text mode, color
+                                      INT           10h                                  ; Call BIOS video interrupt
+                                      ret
 set_text_mode endp
 select_game_mode proc
-                                      call set_text_mode
+                                      call          set_text_mode
                                       call          clear_text_mode_screen
                                       moveCursor    0,0
                                       DisPlayString selecting_prombt_message
